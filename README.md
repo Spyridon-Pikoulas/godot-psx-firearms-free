@@ -40,6 +40,10 @@ For the full PS1 look, [PSX Look](https://heyheythere.itch.io/psx-look) turns th
 level) over in one line: wobbling vertices, warping textures, 240p, dither and 15-bit colour. Its
 [free sampler](https://heyheythere.itch.io/psx-look-free) has the vertex snap and affine textures.
 
+For their sound, [PSX Horror SFX Free](https://heyheythere.itch.io/psx-horror-sfx-free) has this
+pistol's shot and reload and this pump shotgun's shot and pump, free under CC BY; [PSX Horror
+SFX](https://heyheythere.itch.io/psx-horror-sfx) has all 14 guns.
+
 ### License
 
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): use them in any game, commercial or

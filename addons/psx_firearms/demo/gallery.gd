@@ -11,6 +11,7 @@ const PSX_LOOK := "res://addons/psx_look/"
 const FLOOR := Color(0.13, 0.12, 0.11)
 const WALL := Color(0.2, 0.19, 0.17)
 const GAP := 0.05
+const WRAP := 24.0  # the widest line of the all-props view
 const EYE := 1.6
 const STEP := 0.3  # the highest edge the walker steps up
 const CUT := 2.9  # the level's view leaves out what stands this high: an upper storey
@@ -323,8 +324,8 @@ func show_all() -> void:
 	var rows := {"wall": [], "floor": [], "item": []}
 	for p in props:
 		rows["item" if p["place"] == "hand" else p["place"]].append(p)
-	_row(rows["wall"], 0.0, 0.18)
-	_row(rows["floor"], 0.3, 0.25)
+	var wall_width := _row(rows["wall"], 0.0, 0.18, true).x
+	var floor_size := _row(rows["floor"], 0.3, 0.25)
 	var groups: Array = []
 	var by_group := {}
 	for p in rows["item"]:
@@ -336,22 +337,25 @@ func show_all() -> void:
 	for g in groups:
 		clusters.append(_cluster(by_group[g]))
 	var per_row := ceili(clusters.size() / 2.0)
-	var z := 1.2
+	var z := 0.3 + floor_size.y + 0.6
+	var width := maxf(wall_width, floor_size.x)
 	for r in range(0, clusters.size(), per_row):
 		var line := clusters.slice(r, r + per_row)
-		var width := 0.0
+		var line_width := 0.0
 		var depth := 0.0
 		for c in line:
-			width += c.get_meta("size").x + 0.25
+			line_width += c.get_meta("size").x + 0.25
 			depth = maxf(depth, c.get_meta("size").y)
-		var x := -width * 0.5
+		width = maxf(width, line_width)
+		var x := -line_width * 0.5
 		for c in line:
 			c.position = Vector3(x, 0, z)
 			x += c.get_meta("size").x + 0.25
 		z += depth + 0.35
 	wall.visible = true
+	(ground.mesh as PlaneMesh).size = Vector2(maxf(40, width + 4), maxf(40, 2 * z + 4))
 	target = Vector3(0, 0.45, z * 0.45)
-	dist = 5.2
+	dist = maxf(5.2, maxf(width, z) * 0.75)
 	pitch = -0.42
 	yaw = 0.0
 	icon.hide()
@@ -885,15 +889,41 @@ func _lay(node: Node3D, p: Dictionary) -> void:
 	node.position.y += p["max"][0]
 
 
-func _row(list: Array, back: float, gap: float) -> void:
+## Props side by side from `back`, in lines no wider than WRAP: the floor's one behind the other,
+## the wall's (`on_wall`) in two, one over the other. Returns the lines' width and depth.
+func _row(list: Array, back: float, gap: float, on_wall := false) -> Vector2:
+	var total := -gap
+	var widest := 0.0
+	for p in list:
+		total += p["size"][0] + gap
+		widest = maxf(widest, p["size"][0])
+	var wrap := maxf(WRAP, total / 2.0 + widest + gap) if on_wall else WRAP
+	var lines: Array = [[]]
 	var width := -gap
 	for p in list:
+		if width + gap + p["size"][0] > wrap and not lines[-1].is_empty():
+			lines.append([])
+			width = -gap
+		lines[-1].append(p)
 		width += p["size"][0] + gap
-	var x := -width * 0.5
-	for p in list:
-		var z: float = 0.0 if p["place"] == "wall" else back + p["max"][1]
-		_place(p, Vector3(x - p["min"][0], 0, z))
-		x += p["size"][0] + gap
+	var size := Vector2.ZERO
+	var z := back
+	for k in lines.size():
+		var line: Array = lines[k]
+		width = -gap
+		var depth := 0.0
+		for p in line:
+			width += p["size"][0] + gap
+			depth = maxf(depth, p["size"][1])
+		var x := -width * 0.5
+		for p in line:
+			var at := Vector3(x - p["min"][0], k * 3.0, 0.0) if on_wall else Vector3(x - p["min"][0], 0, z + p["max"][1])
+			_place(p, at)
+			x += p["size"][0] + gap
+		size.x = maxf(size.x, width)
+		z += depth + 0.3
+	size.y = z - back - 0.3
+	return size
 
 
 ## A group's items packed in rows under 0.6 m.
