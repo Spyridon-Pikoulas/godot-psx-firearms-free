@@ -44,6 +44,10 @@ For their sound, [PSX Horror SFX Free](https://heyheythere.itch.io/psx-horror-sf
 pistol's shot and reload and this pump shotgun's shot and pump, free under CC BY; [PSX Horror
 SFX](https://heyheythere.itch.io/psx-horror-sfx) has all 14 guns.
 
+For the screens around them, [PSX Horror UI](https://heyheythere.itch.io/psx-horror-ui) is a PS1
+survival horror menu kit for Godot 4 (inventory, examine, map, files, typewriter save) whose item
+icons are rendered from PSX Firearms.
+
 ### License
 
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): use them in any game, commercial or
